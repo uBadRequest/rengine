@@ -3,13 +3,18 @@
 
 for i in "$@" ; do
     if [[ $i == "gau" ]] ; then
-        echo $1 | gau -providers wayback | httpx -status-code -content-length -title -json -o $2/urls_wayback.json
+        echo $1 | gau -providers wayback -o $2/urls_gau.txt
+        httpx -l $2/urls_gau.txt -status-code -content-length -title -json -o $2/httpx_wayback.json
     fi
     if [[ $i == "hakrawler" ]] ; then
-        echo $1 | hakrawler -plain | httpx -status-code -content-length -title -json -o $2/urls_hakrawler.json
+        hakrawler -plain -url $1 > $2/urls_hakrawler.txt
+        httpx -l $2/urls_hakrawler.txt -status-code -content-length -title -json -o $2/httpx_hakrawler.json
     fi
 done
 
-cat $2/urls* > $2/all_urls.json
+cat $2/httpx* > $2/final_httpx_urls.json
 
-rm -rf $2/urls*
+cat $2/url* >> $2/all_urls.txt
+
+rm -rf $2/url*
+rm -rf $2/httpx*
