@@ -457,10 +457,15 @@ def doScan(domain_id, scan_history_id, scan_type, engine_type):
                     wordlist_location = settings.TOOL_LOCATION + 'wordlist/' + \
                         yaml_configuration[DIR_FILE_SEARCH][WORDLIST] + '.txt'
 
-                dirsearch_command = settings.TOOL_LOCATION + 'get_dirs.sh {} {} {}'.format(
-                    subdomain.http_url, wordlist_location, dirs_results)
-                dirsearch_command = dirsearch_command + \
-                    ' {} {}'.format(extensions, threads)
+                if ('ffuf' not in yaml_configuration['dir_file_search']):
+                    dirsearch_command = settings.TOOL_LOCATION + 'get_dirs.sh {} {} {}'.format(
+                        subdomain.http_url, wordlist_location, dirs_results)
+                    dirsearch_command = dirsearch_command + \
+                        ' {} {}'.format(extensions, threads)
+                else:
+                    ffuf_command = settings.TOOL_LOCATION + 'get_ffufdirs.sh {} {} {}'.format(subdomain.http_url, wordlist_location, dirs_results)
+
+
 
                 # check if recursive strategy is set to on
                 if RECURSIVE in yaml_configuration[DIR_FILE_SEARCH] and yaml_configuration[DIR_FILE_SEARCH][RECURSIVE]:
@@ -468,8 +473,11 @@ def doScan(domain_id, scan_history_id, scan_type, engine_type):
                         ' {}'.format(
                             yaml_configuration[DIR_FILE_SEARCH][RECURSIVE_LEVEL])
 
-                os.system(dirsearch_command)
-
+                if ('ffuf' not in yaml_configuration['dir_file_search']):
+                    os.system(dirsearch_command)
+                else:
+                    os.system(ffuf_command)
+                    os.system(settings.TOOL_LOCATION + 'ffuf_json_parse.sh {}'.format(dirs_results))
                 try:
                     with open(dirs_results, "r") as json_file:
                         json_string = json_file.read()
